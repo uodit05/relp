@@ -5,6 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard</title>
     <style>
+        /* Styles for body */
+        body {
+            background-color: #f0f0f0; /* Light gray background */
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Styles for card layout */
+        .card {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+            width: 300px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Card content */
+        .card-content {
+            padding: 10px 0;
+        }
+
+        .card-content a {
+            text-decoration: none; /* Remove underline */
+            color: #333; /* Change link color */
+        }
+
+        .card-content a:hover {
+            text-decoration: none; /* Remove underline on hover */
+            color: #555; /* Change link color on hover */
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin: 0 0 10px;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 1rem;
+            margin: 0;
+            color: #666;
+        }
+
+        /* Delete button */
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
         /* Overlay CSS */
         .overlay {
             display: none;
@@ -19,42 +87,134 @@
         }
 
         .overlay-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-        }
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.overlay-content label {
+    display: inline-block;
+    width: 100px; /* Adjust the width of labels */
+    margin-bottom: 10px;
+}
+
+.overlay-content input,
+.overlay-content textarea {
+    width: calc(100% - 120px); /* Adjust the width of inputs */
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
 
         .close-btn {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            cursor: pointer;
         }
 
         .close-btn:hover,
         .close-btn:focus {
             color: black;
             text-decoration: none;
+        }
+
+        /* Add property button */
+        .add-property-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
             cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .add-property-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Logout button */
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            margin-left: 10px; /* Added margin-left */
+            margin-right: 10px;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Container for heading and buttons */
+        .heading-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .heading-container h1 {
+            margin: 0;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Seller Dashboard</h1>
-    <button onclick="openOverlay()">Add Property</button>
-    <button onclick="window.location.href='/seller/logout/'">Logout</button>
+    <div class="heading-container">
+        <h1>Welcome to the Seller Dashboard, {{ request.user.username }}</h1>
+        <div>
+            <button onclick="openOverlay()" class="add-property-btn">Add Property</button>
+            <a href="{% url 'seller_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
 
     <!-- Listing Section -->
- <h2>Your Listings</h2>
-    <ul>
+    <h2>Your Listings</h2>
+    {% if listings %}
         {% for listing in listings %}
-            <li>{{ listing.property.name }} - {{ listing.property.address }} - Price: {{ listing.price }}</li>
+            <div class="card">
+                <a href="{% url 'property_details' listing.property_id %}" target="_blank">
+                    <div class="card-content">
+                            <h3>{{ listing.name }}</h3>
+                            <p>Price: {{ listing.price }}</p>
+                            <br>
+                            <p>Bedrooms: {{ listing.property.bedrooms }}</p>
+                            <p>Bathroom: {{ listing.property.bathrooms }}</p>
+                            <hr>
+                            <p>Description: {{ listing.description }}</p>
+                </a>
+                    <form action="{% url 'delete_listing' listing.listing_id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    {% else %}
+        <p>No listings found.</p>
+    {% endif %}
 
     <!-- Overlay Content -->
     <div id="overlay" class="overlay">
@@ -63,27 +223,61 @@
             <h2>Add Property</h2>
             <form action="{% url 'add_property' %}" method="POST">
                 {% csrf_token %}
-                <!-- Input fields for property details -->
-                <label for="name">Name:</label><br>
-                <input type="text" id="name" name="name"><br>
-                <label for="address">Address:</label><br>
-                <input type="text" id="address" name="address"><br>
-                <label for="bedrooms">Bedrooms:</label><br>
-                <input type="number" id="bedrooms" name="bedrooms"><br>
-                <label for="bathrooms">Bathrooms:</label><br>
-                <input type="number" id="bathrooms" name="bathrooms"><br>
-                <label for="sqft">Square Feet:</label><br>
-                <input type="number" id="sqft" name="sqft"><br>
-                <label for="ptype">Property Type:</label><br>
-                <input type="text" id="ptype" name="ptype"><br>
-                <label for="price">Price:</label><br>
-                <input type="number" id="price" name="price"><br>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required><br><br>
+
+                <label for="bedrooms">Bedrooms:</label>
+                <input type="number" id="bedrooms" name="bedrooms" required><br><br>
+
+                <label for="bathrooms">Bathrooms:</label>
+                <input type="number" id="bathrooms" name="bathrooms" required><br><br>
+
+                <label for="sqft">Sqft:</label>
+                <input type="number" id="sqft" name="sqft" required><br><br>
+
+                <label for="ptype">PropertyType:</label>
+                <input type="text" id="ptype" name="ptype" required><br><br>
+
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" required><br><br>
+
                 <label for="description">Description:</label><br>
-                <textarea id="description" name="description"></textarea><br>
-                <button type="submit">Add Property</button>
+                <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+                <button type="submit" class="add-property-btn">Add Property</button>
             </form>
         </div>
     </div>
+
+    <!-- Booking Section -->
+    <h2>Bookings on your properties</h2>
+    {% for listing, bookings in bookings_per_listing.items %}
+        <div>
+            <h3>{{ listing.name }}</h3>
+            <div class="booking-cards">
+                {% if bookings %}
+                    {% for booking in bookings %}
+                        <div class="card">
+                            <div class="card-content">
+                                <p><b>User:</b> {{ booking.user.username }}</p>
+                                <p><b>Booking Date:</b> {{ booking.bdate }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card">
+                        <div class="card-content">
+                            <p>No bookings for this listing.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
 
     <!-- JavaScript to open/close overlay -->
     <script>

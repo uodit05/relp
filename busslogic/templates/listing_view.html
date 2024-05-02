@@ -1,21 +1,124 @@
-<!-- listing_view.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listings</title>
+    <title>Buyer Listings</title>
+    <style>
+        /* Styles for body */
+        body {
+            background-color: #f0f0f0; /* Light gray background */
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Styles for card layout */
+        .card {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+            width: 300px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Card content */
+        .card-content {
+            padding: 10px 0;
+        }
+
+        .card a {
+            text-decoration: none; /* Remove underline */
+            color: #333; /* Change link color */
+        }
+
+        .card a:hover {
+            text-decoration: none; /* Remove underline on hover */
+            color: #555; /* Change link color on hover */
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin: 0 0 10px;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 1rem;
+            margin: 0;
+            color: #666;
+        }
+
+        /* Logout button */
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            margin-left: 10px; /* Added margin-left */
+            margin-right: 10px;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Heading container */
+        .heading-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .heading-container h1 {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Listings</h1>
-    <ul>
-        <form action="{% url 'buyer_logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-        </form>
+    <div class="heading-container">
+        <h1>Welcome to the Buyer Listings, {{ request.user.username }}</h1>
+        <a href="{% url 'buyer_logout' %}" class="logout-btn">Logout</a>
+    </div>
+
+
+    {% if listings %}
         {% for listing in listings %}
-            <li>{{ listing.description }} - ${{ listing.price }}</li>
+            <div class="card">
+                <a href="{% url 'property_details' listing.property_id %}" target="_blank">
+                    <div class="card-content">
+                            <h3>{{ listing.name }}</h3>
+                            <p>Price: {{ listing.price }}</p>
+                            <br>
+                            <p>Bedrooms: {{ listing.property.bedrooms }}</p>
+                            <p>Bathroom: {{ listing.property.bathrooms }}</p>
+                            <hr>
+                            <p>Description: {{ listing.description }}</p>
+                    </div>
+                </a>
+            </div>
         {% endfor %}
-    </ul>
+    {% else %}
+        <p>No available listings found.</p>
+    {% endif %}
 </body>
 </html>

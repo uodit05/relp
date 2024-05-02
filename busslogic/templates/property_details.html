@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details</title>
+    <style>
+        /* Styles for body */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Styles for container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* Styles for headings */
+        h1, h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Styles for property details */
+        .property-details {
+            margin-bottom: 20px;
+        }
+
+        .property-details p {
+            margin: 5px 0;
+        }
+
+        /* Styles for reviews */
+        .reviews {
+            margin-bottom: 20px;
+        }
+
+        .reviews ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .reviews ul li {
+            margin-bottom: 5px;
+        }
+
+        /* Styles for add comment form */
+        .add-comment-form textarea {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .add-comment-form button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-comment-form button:hover {
+            background-color: #45a049;
+        }
+
+        .horizontal-vals {
+            width: 70%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        /* Styles for book button */
+        /* Styles for container */
+        .container-c {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between; /* Align items with space between */
+            align-items: center; /* Center items vertically */
+        }
+
+        /* Styles for book button */
+        .book-button {
+            background-color: #007bff; /* Blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .book-button:hover {
+            background-color: #0056b3; /* Darker shade of blue on hover */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="container-c">
+            <h1>Property Details of {{ property.name }}</h1>
+            <form action="{% url 'book_property' listing.listing_id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="book-button">Book</button>
+            </form>
+        </div>
+
+        <hr>
+        <p><b>Description:</b> {{ listing.description }}</p>
+        <div class="property-details">
+            <div class="horizontal-vals">
+                <p><b>Price:</b> {{ listing.price }}</p>
+                <p><b>Sqft:</b> {{ property.sqft }}</p>
+                <p><b>Property Type:</b> {{ property.ptype }}</p>
+            </div>
+            <div class="horizontal-vals">
+                <p><b>Bedrooms:</b> {{ property.bedrooms }}</p>
+                <p><b>Bathrooms:</b> {{ property.bathrooms }}</p>
+            </div>
+            <br>
+            <p><b>Address:</b> {{ property.address }}</p>
+        </div>
+        <hr>
+            <h4>User Posted: <i>{{ listing.user.username }}</i></h4>
+        <hr>
+        <!-- Add Comment Form -->
+        <div class="add-comment-form">
+            <h2>Add Your Comment: </h2>
+            <form action="{% url 'add_comment' listing.listing_id %}" method="POST">
+                {% csrf_token %}
+                <textarea name="comment" rows="1" placeholder="Enter your comment" required></textarea><br>
+                <button type="submit">Add Comment</button>
+            </form>
+        </div>
+        <div class="reviews">
+            <h2>Reviews From Users:</h2>
+
+            {% if reviews %}
+                <ul>
+                    {% for review in reviews %}
+                        <li><b>{{ review.user.username }}:</b> {{ review.comment }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No reviews yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

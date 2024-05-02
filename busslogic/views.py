@@ -1,12 +1,13 @@
 # views.py
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.hashers import make_password
 from .forms import UserCreationForm, PropertyForm
 from django.contrib.auth.decorators import login_required
-from .models import Property, Listing, Booking
+from .models import Property, Listing, Booking, Review, Booking
+
 
 def register(request):
     if request.method == 'POST':
@@ -47,14 +48,16 @@ def seller_dashboard(request):
     if request.user.role != 'seller':
         return HttpResponse("You are not authorized to view this page.")
 
-    # Exclude listings that are already booked
-    booked_listings = Booking.objects.values_list('listing_id', flat=True)
-    listings = Listing.objects.exclude(listing_id__in=booked_listings)
+    # Filter listings by the current logged-in user
+    listings = Listing.objects.filter(user=request.user)
 
-    form = PropertyForm()  # Move this line outside of the POST condition
+    # Get all bookings for each listing
+    bookings_per_listing = {}
+    for listing in listings:
+        bookings = Booking.objects.filter(listing=listing)
+        bookings_per_listing[listing] = bookings
 
-    return render(request, 'seller_dashboard.html', {'listings': listings, 'form': form})
-
+    return render(request, 'seller_dashboard.html', {'listings': listings, 'bookings_per_listing': bookings_per_listing})
 
 def seller_logout(request):
     auth_logout(request)
@@ -65,11 +68,12 @@ def listing_view(request):
     if request.user.role != 'buyer':
         return HttpResponse("You are not authorized to view this page.")
 
-    # Exclude listings that are already booked
+    # Get all listings that are not booked
     booked_listings = Booking.objects.values_list('listing_id', flat=True)
     listings = Listing.objects.exclude(listing_id__in=booked_listings)
 
     return render(request, 'listing_view.html', {'listings': listings})
+
 
 def buyer_logout(request):
     auth_logout(request)
@@ -104,3 +108,52 @@ def add_property(request):
         form = PropertyForm()
 
     return render(request, 'seller_dashboard.html', {'form': form})
+
+
+def property_details(request, property_id):
+    property_obj = get_object_or_404(Property, pk=property_id)
+    listing = property_obj.listings.first()  # Assuming one listing per property for simplicity
+    reviews = Review.objects.filter(listing=listing)  # Get reviews for this listing
+
+    # Pass property, listing, and reviews to the template
+    return render(request, 'property_details.html', {'property': property_obj, 'listing': listing, 'reviews': reviews})
+
+def delete_listing(request, listing_id):
+    if request.method == 'POST':
+        listing = get_object_or_404(Listing, pk=listing_id)
+        property_id = listing.property_id
+        listing.delete()
+
+        # Also delete the associated property
+        Property.objects.filter(property_id=property_id).delete()
+
+    return redirect('seller_dashboard')
+
+def add_comment(request, listing_id):
+    if request.method == 'POST':
+        listing = Listing.objects.get(pk=listing_id)
+        comment = request.POST['comment']
+        # Create a new review object with the comment
+        review = Review.objects.create(listing=listing, user=request.user, comment=comment)
+        # Redirect back to the property details page
+        return redirect('property_details', property_id=listing.property_id)
+    else:
+        # If the request method is not POST, redirect to some other page
+        return redirect('home')  # Adjust this to your desired URL
+
+def book_property(request, listing_id):
+    if request.method == 'POST':
+        # Assuming you have a form to handle the booking process
+        # Extract the listing and user information from the request
+        listing = Listing.objects.get(pk=listing_id)
+        user = request.user
+
+        # Create a new booking entry
+        booking = Booking.objects.create(listing=listing, user=user)
+
+        # Optionally, you can add more logic here such as sending a confirmation email
+
+        return redirect('property_details', property_id=listing.property_id)
+
+    # If the request method is not POST, you may handle it differently, such as showing an error page
+    return redirect('property_details', property_id=listing.property_id)

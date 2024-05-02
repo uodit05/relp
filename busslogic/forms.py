@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import User
+from .models import User, Review
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 
